@@ -1,10 +1,10 @@
 import React from "react";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
-import Navbar from "./components/nav"; 
-import Home from "./components/home";
-import Create from "./components/create"; 
-import Mine from "./components/mine";
-import Task from "./components/task";
+import Navbar from "./Components/Navbar"; 
+import Home from "./Components/home";
+import Create from "./Components/create"; 
+import Mine from "./Components/mine";
+import Task from "./Components/task";
 
 function App() {
   return (
