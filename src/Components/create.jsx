@@ -2,11 +2,13 @@ import React, { useState, useEffect } from "react";
 import { FaPlus, FaCalendarAlt, FaTag, FaCheck } from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
 import "../App.css";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 
 function Create() {
   const [task, setTask] = useState("");
   const [category, setCategory] = useState("Work");
-  const [date, setDate] = useState("");
+  const [date, setDate] = useState(null);
   const [customCategory, setCustomCategory] = useState("");
   const [categories, setCategories] = useState([]);
   const [notification, setNotification] = useState({ show: false, message: "", type: "" });
@@ -58,7 +60,7 @@ function Create() {
       id: Date.now(), 
       task: task.trim(), 
       category: finalCategory, 
-      date, 
+      date: date.toISOString().split('T')[0], 
       completed: false,
       createdAt: new Date().toISOString()
     };
@@ -68,12 +70,10 @@ function Create() {
 
     // Reset form
     setTask("");
-    setDate("");
+    setDate(null);
     setCategory("Work");
     setCustomCategory("");
   };
-
-  const today = new Date().toISOString().split('T')[0];
 
   return (
     <motion.div 
@@ -144,13 +144,15 @@ function Create() {
           </label>
           <div className="input-with-icon">
             <FaCalendarAlt className="input-icon" />
-            <input
+            <DatePicker
               id="date-input"
-              type="date"
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
-              min={today}
+              selected={date}
+              onChange={(date) => setDate(date)}
+              minDate={new Date()}
+              placeholderText="Select a date"
               className="form-input"
+              dateFormat="yyyy-MM-dd"
+              showPopperArrow={false}
             />
           </div>
         </div>

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { FaCheck, FaEdit, FaTrash, FaPlus, FaSearch } from "react-icons/fa";
+import { FaCheck, FaEdit, FaTrash, FaPlus, FaSearch, FaBars, FaTimes } from "react-icons/fa";
 import "../App.css";
 
 function Task() {
@@ -11,6 +11,7 @@ function Task() {
   const [newCategory, setNewCategory] = useState("Work");
   const [showAddForm, setShowAddForm] = useState(false);
   const [notification, setNotification] = useState({ show: false, message: "", type: "" });
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     const storedTasks = JSON.parse(localStorage.getItem("tasks")) || [];
@@ -98,135 +99,141 @@ function Task() {
   );
 
   return (
-    <>
-      
-      <div className="task-container">
-        <div className="task-header">
-          <h2>Task Manager</h2>
+    <div className="task-container">
+      <div className="task-header">
+        <div className="header-left">
           <button 
-            className="add-task-btn"
-            onClick={() => setShowAddForm(!showAddForm)}
+            className="mobile-menu-btn"
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
           >
-            <FaPlus /> {showAddForm ? "Cancel" : "Add Task"}
+            {isMobileMenuOpen ? <FaTimes /> : <FaBars />}
           </button>
+          <h2>Task Manager</h2>
         </div>
+        <button 
+          className="add-task-btn"
+          onClick={() => setShowAddForm(!showAddForm)}
+        >
+          <FaPlus /> {showAddForm ? "Cancel" : "Add Task"}
+        </button>
+      </div>
 
-        {showAddForm && (
-          <form onSubmit={handleAddTask} className="add-task-form">
-            <div className="form-group">
-              <input
-                type="text"
-                value={newTask}
-                onChange={(e) => setNewTask(e.target.value)}
-                placeholder="Enter new task"
-                autoFocus
-              />
-              <select
-                value={newCategory}
-                onChange={(e) => setNewCategory(e.target.value)}
-              >
-                {categories.map((category) => (
-                  <option key={category} value={category}>
-                    {category}
-                  </option>
-                ))}
-              </select>
-              <button type="submit" className="submit-btn">
-                <FaPlus /> Add
-              </button>
-            </div>
-          </form>
-        )}
-
-        <div className="task-filters">
-          <div className="search-box">
-            <FaSearch className="search-icon" />
+      {showAddForm && (
+        <form onSubmit={handleAddTask} className="add-task-form">
+          <div className="form-group">
             <input
               type="text"
-              placeholder="Search tasks..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              value={newTask}
+              onChange={(e) => setNewTask(e.target.value)}
+              placeholder="Enter new task"
+              autoFocus
             />
+            <select
+              value={newCategory}
+              onChange={(e) => setNewCategory(e.target.value)}
+            >
+              {categories.map((category) => (
+                <option key={category} value={category}>
+                  {category}
+                </option>
+              ))}
+            </select>
+            <button type="submit" className="submit-btn">
+              <FaPlus /> Add
+            </button>
           </div>
-          <select 
-            value={filterCategory} 
-            onChange={(e) => setFilterCategory(e.target.value)}
-          >
-            <option value="All">All Categories</option>
-            {categories.map((category) => (
-              <option key={category} value={category}>
-                {category}
-              </option>
-            ))}
-          </select>
-        </div>
+        </form>
+      )}
 
-        <div className="task-table-container">
-          <table className="task-table">
-            <thead>
-              <tr>
-                <th>Task</th>
-                <th>Category</th>
-                <th>Date</th>
-                <th>Actions</th>
+      <div className={`task-filters ${isMobileMenuOpen ? "mobile-open" : ""}`}>
+        <div className="search-box">
+          <FaSearch className="search-icon" />
+          <input
+            type="text"
+            placeholder="Search tasks..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+        </div>
+        <select 
+          value={filterCategory} 
+          onChange={(e) => setFilterCategory(e.target.value)}
+          className="category-filter"
+        >
+          <option value="All">All Categories</option>
+          {categories.map((category) => (
+            <option key={category} value={category}>
+              {category}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      <div className="task-table-container">
+        <table className="task-table">
+          <thead>
+            <tr>
+              <th>Task</th>
+              <th className="category-column">Category</th>
+              <th className="date-column">Date</th>
+              <th className="actions-column">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredTasks.length === 0 ? (
+              <tr className="no-tasks">
+                <td colSpan="4">
+                  {search || filterCategory !== "All" 
+                    ? "No matching tasks found" 
+                    : "No tasks available. Add a new task!"}
+                </td>
               </tr>
-            </thead>
-            <tbody>
-              {filteredTasks.length === 0 ? (
-                <tr className="no-tasks">
-                  <td colSpan="4">
-                    {search || filterCategory !== "All" 
-                      ? "No matching tasks found" 
-                      : "No tasks available. Add a new task!"}
+            ) : (
+              filteredTasks.map((task) => (
+                <tr key={task.id}>
+                  <td className="task-name">{task.task}</td>
+                  <td className="category-column">
+                    <span className={`category-tag ${task.category.toLowerCase()}`}>
+                      {task.category}
+                    </span>
+                  </td>
+                  <td className="date-column">{new Date(task.date).toLocaleDateString()}</td>
+                  <td className="actions actions-column">
+                    <button 
+                      onClick={() => toggleComplete(task.id)}
+                      className="icon-btn complete"
+                      title="Mark as Complete"
+                    >
+                      <FaCheck />
+                    </button>
+                    <button
+                      onClick={() => editTask(task.id)}
+                      className="icon-btn edit"
+                      title="Edit Task"
+                    >
+                      <FaEdit />
+                    </button>
+                    <button
+                      onClick={() => deleteTask(task.id)}
+                      className="icon-btn delete"
+                      title="Delete Task"
+                    >
+                      <FaTrash />
+                    </button>
                   </td>
                 </tr>
-              ) : (
-                filteredTasks.map((task) => (
-                  <tr key={task.id}>
-                    <td>{task.task}</td>
-                    <td>
-                      <span className={`category-tag ${task.category.toLowerCase()}`}>
-                        {task.category}
-                      </span>
-                    </td>
-                    <td>{new Date(task.date).toLocaleDateString()}</td>
-                    <td className="actions">
-                      <button 
-                        onClick={() => toggleComplete(task.id)}
-                        className="icon-btn complete"
-                        title="Mark as Complete"
-                      >
-                        <FaCheck />
-                      </button>
-                      <button
-                        onClick={() => editTask(task.id)}
-                        className="icon-btn edit"
-                        title="Edit Task"
-                      >
-                        <FaEdit />
-                      </button>
-                      <button
-                        onClick={() => deleteTask(task.id)}
-                        className="icon-btn delete"
-                        title="Delete Task"
-                      >
-                        <FaTrash />
-                      </button>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-
-        {notification.show && (
-          <div className={`notification ${notification.type}`}>
-            {notification.message}
-          </div>
-        )}
+              ))
+            )}
+          </tbody>
+        </table>
       </div>
-    </>
+
+      {notification.show && (
+        <div className={`notification ${notification.type}`}>
+          {notification.message}
+        </div>
+      )}
+    </div>
   );
 }
 
